@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/models/product.dart';
 import 'product_grid_tile.dart';
 import 'products_manager.dart';
+import 'package:provider/provider.dart';
+import '../../models/product.dart';
 
 class ProductGrid extends StatelessWidget{
   final bool showFavorites;
@@ -9,8 +11,10 @@ class ProductGrid extends StatelessWidget{
   @override
   Widget build(BuildContext context){
     final productsManager = ProductsManager();
-    final product = 
-          showFavorites ? productsManager.favoriteItems : productsManager.items;
+    final product = context.select<ProductsManager,List<Product>>(
+      (ProductsManager) => showFavorites ? productsManager.favoriteItems : productsManager.items
+      ) ;
+         
     return GridView.builder(
       padding: const EdgeInsets.all(10.0),
       itemCount: product.length,
