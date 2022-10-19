@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print
 
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/ui/products/edit_product_screen.dart';
 import 'package:flutter_application_1/ui/screens.dart';
 import 'package:provider/provider.dart';
 import '../products/products_manager.dart';
@@ -53,7 +54,10 @@ class UserProductListTile extends StatelessWidget {
       return IconButton(
         icon: const Icon(Icons.edit),
         onPressed: (){
-          print('Go to edit product screen');
+          Navigator.of(context).pushNamed(
+            EditProductScreen.routeName,
+            arguments: product.id,
+          );
         },
         color: Theme.of(context).primaryColor,
       );
