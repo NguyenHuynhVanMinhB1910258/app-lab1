@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/ui/cart/cart_screen.dart';
+import 'package:flutter_application_1/ui/screens.dart';
 import 'product_grid.dart';
 import '../shared/app_drawer.dart';
 import '../cart/cart_manager.dart';
@@ -12,8 +13,13 @@ class ProductsOverviewScreen extends StatefulWidget{
   State<ProductsOverviewScreen> createState() => _ProductsOverviewScreenState();
 }
 class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
-  var _showOnlyFavorite = false;
-
+  final _showOnlyFavorite = ValueNotifier<bool>(false);
+  late Future<void> _fetchProducts;
+  @override
+  void initState(){
+    super.initState();
+    _fetchProducts = context.read<ProductsManager>().fetchProducts();
+  }
   @override
   Widget build(BuildContext context){
     return Scaffold(
@@ -25,7 +31,21 @@ class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
         ],
       ),
       drawer: const AppDrawer(),
-      body: ProductGrid(_showOnlyFavorite),
+      body: FutureBuilder(
+        future: _fetchProducts,
+        builder:(context, snapshot){
+          if( snapshot.connectionState == ConnectionState.done){
+            return ValueListenableBuilder<bool>(
+              valueListenable: _showOnlyFavorite,
+              builder: (context, onlyFavorite, child) {
+                return ProductGrid(onlyFavorite);
+              });
+          }
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        },
+      ),
     );
   }
   Widget buildShoppingCartIcon(){
@@ -49,13 +69,11 @@ class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
   Widget buildProductFilterMenu(){
     return PopupMenuButton(
       onSelected:(FilterOptions selectedValue){
-        setState(() {
           if (selectedValue == FilterOptions.favorites){
-            _showOnlyFavorite=true;
+            _showOnlyFavorite.value=true;
           }else{
-            _showOnlyFavorite=false;
+            _showOnlyFavorite.value=false;
           }
-        });
       },
       icon: const Icon(
         Icons.more_vert,
