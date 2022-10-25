@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/ui/products/edit_product_screen.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'ui/screens.dart';
-void main() {
+Future<void> main() async {
+  await dotenv.load();
   runApp(const MyApp());
 }
 
@@ -15,6 +17,9 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
+          create: (context) => AuthManager(),
+         ),
+        ChangeNotifierProvider(
           create: (ctx) => ProductsManager(),
          ),
         ChangeNotifierProvider(
@@ -24,7 +29,9 @@ class MyApp extends StatelessWidget {
           create: (ctx) => OrdersManager()
           ),
       ],
-      child: MaterialApp(
+      child: Consumer<AuthManager>(
+        builder:(ctx, authManager,child){
+          return MaterialApp(
       title: 'My Shop',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
@@ -39,7 +46,16 @@ class MyApp extends StatelessWidget {
       // home: Container(
       //   color: Colors.green,
       //   ),
-          home: const ProductsOverviewScreen(),
+          home: authManager.isAuth
+          ? const ProductsOverviewScreen()
+          : FutureBuilder(
+            future: authManager.tryAutoLogin(),
+            builder:(ctx, snapshot){
+              return snapshot.connectionState == ConnectionState.waiting
+              ? const SplashScreen()
+              : const AuthScreen();
+              } ,
+            ),
           routes: {
             CartScreen.routeName:
               (ctx) => const CartScreen(),
@@ -63,8 +79,9 @@ class MyApp extends StatelessWidget {
             }
         return null;
       },
-    ),
-  );
-    
-  }
+    );
+    },
+    ),   
+  );   
+}
 }
